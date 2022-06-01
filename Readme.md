@@ -1,7 +1,7 @@
 ### Policing Equity in 2016
 
 <p align="center">
-   <img src="https://github.com/usama-akram-gt/Center_for_Policing_Equity/blob/master/1.png" />
+   <img src="https://github.com/usama-akram-gt/Center_for_Policing_Equity/blob/master/map.png" />
 </p>
 
 ### Problem Statement?
@@ -14,11 +14,11 @@ dataset has 2383 rows and 47 columns where different results have been
 concluded racially and it has been checked that how different crimes
 have happened throughout the year through which police department can
 learn and grow accordingly. All of the key findings from the project are
-defined below:
+defined below: <br>
 Center for policing equity: <a href="https://www.r-project.org/about.html">Project Link</a>
 
 ### Built With
-* [R](https://www.r-project.org/) <br>
+* [R](https://www.r-project.org/)
 For further documentation visit: <a href="https://www.r-project.org/about.html">About R</a>
 
 ### Installation
