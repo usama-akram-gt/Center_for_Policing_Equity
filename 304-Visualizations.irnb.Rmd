@@ -1,0 +1,468 @@
+---
+title: "Report - Policing Equity in 2016"
+output: html_document
+date: 'Apr 26, 2022'
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+MA304 - Exploratory Data Analysis and Data Visualisation
+
+#### Usama Akram - 2103163
+
+```{r}
+# Adding all the libraries
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(htmlwidgets)
+library(tidyverse)
+library(ggrepel)
+library(lubridate)
+library(rstudioapi)
+library(ggmap)
+library(maps)
+library(ggridges)
+library(gridExtra)
+library(shiny)
+library(leaflet)
+library(treemapify)
+library(sf)
+library(calendR)
+library(gganimate)
+library(hrbrthemes)
+library(ggpubr)
+library(shiny)
+```
+
+```{r}
+policing_data <- read.csv("./37-00049_UOF-P_2016_prepped.csv") # reading policing data
+head(policing_data) ## printing first 5 lines of our data
+```
+
+##### Data Pre-processing & structuring
+
+```{r}
+# firstly removing complete extra row of column where we have extra headings
+policing_data = policing_data[-1,] # removing row which we don't want in our dataset to be
+policing_data = policing_data[complete.cases(policing_data),] # completing missing cases
+# replacing all the null values in the whole data set
+# other than that including unknown and american ind to others
+policing_data <- policing_data %>% replace(.=="NULL", "Other")
+policing_data <- policing_data %>% replace(.=="Unknown", "Other")
+policing_data <- policing_data %>% replace(.=="American Ind", "Other")
+```
+
+```{r}
+dim(policing_data) # 2384 rows and 47 cols
+```
+
+```{r}
+cat(str(policing_data))
+```
+
+```{r}
+# as all of our data is characteristic so can't check summary but still i will try
+cat(summary(policing_data))
+```
+
+### Summary about the analyses and visualizations
+
+This project shows different visualizations and analysis of the dataset
+about policing equity in 2016 through different factors. This dataset
+has 2383 rows and 47 columns where different results have been concluded
+racially and it has been checked that how different crimes have happened
+throughout the year through which police department can learn and grow
+accordingly. All of the key findings from the project are defined below
+where I have concluded different entities from the dataset with their
+properties or characteristics:
+
+| Entities | Characteristics/Features                                                                                                                        |
+|------------------------------------|------------------------------------|
+| Incident | (date, time, reason)                                                                                                                            |
+| Officer  | (ID, Gender, Race, Hire_Date, Years_on_Force, Injury, Injury_Type, Hospitalization)                                                             |
+| Subject  | (ID, Race, Gender, Injury, Injury_Type, Was_Arrested, Description, Offense)                                                                     |
+| Street   | (Number, Name, Directions, Type)                                                                                                                |
+| Location | (Reporting_Area, Sactor, Division, District, Full_street_address, City, State, Latitude, Longitutde,)                                           |
+| Force    | (Reason, type1, type2, type3, type4, type5, type6, type7, type8, type9, type10, effectiveness, EC_Cycles, UOF_number(use_of_force_number),Beat) |
+
+These entities will be used to assess different visualization to make
+more safety in public and to inform law makers that how they are acting
+about different equities. Using these entities I have made different
+relations and have concluded different analysis and conclusions from
+them which are different visualizations of level 7 interactively, or
+animated graphs shown below. Now on compare we can found out how these
+entities are affecting each other and how we can utilize their
+information to find out un-justice or racism.
+
+```{r}
+attach(policing_data) # attaching our data to use in the whole dataset
+```
+
+### Racial and Gender Proportions
+
+```{r}
+## computing OFFICER Gender proportions
+o_gender_2 <- as.data.frame(table(OFFICER_GENDER)) %>% mutate(csum = rev(cumsum(rev(Freq))), pos = Freq/2 + lead(csum, 1),
+                                                              pos = if_else(is.na(pos), Freq/2, pos))
+
+off_gender <- ggplot(as.data.frame(table(OFFICER_GENDER)), aes(x = "" , y = Freq, fill = fct_inorder(OFFICER_GENDER))) +
+  geom_col(width = 1, color = 1) + coord_polar(theta = "y") + scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = o_gender_2, aes(y = pos, label = paste0(Freq)),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Gender count for the subjects")) + theme_void()
+```
+
+```{r}
+## computing OFFICER Race proportions
+o_race_2 <- as.data.frame(table(OFFICER_RACE)) %>% mutate(csum = rev(cumsum(rev(Freq))), pos = Freq/2 + lead(csum, 1),
+                                                          pos = if_else(is.na(pos), Freq/2, pos))
+
+off_race <- ggplot(as.data.frame(table(OFFICER_RACE)), aes(x = "" , y = Freq, fill = fct_inorder(OFFICER_RACE))) +
+  geom_col(width = 1, color = 1) + coord_polar(theta = "y") + scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = o_race_2, aes(y = pos, label = paste0(Freq)),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Racial count for the subjects")) + theme_void()
+```
+
+```{r}
+## computing SUBJECT Gender proportions
+s_gender_2 <- as.data.frame(table(SUBJECT_GENDER)) %>% mutate(csum = rev(cumsum(rev(Freq))), pos = Freq/2 + lead(csum, 1),
+                                                              pos = if_else(is.na(pos), Freq/2, pos))
+
+sub_gender <- ggplot(as.data.frame(table(SUBJECT_GENDER)), aes(x = "" , y = Freq, fill = fct_inorder(SUBJECT_GENDER))) +
+  geom_col(width = 1, color = 1) + coord_polar(theta = "y") + scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = s_gender_2, aes(y = pos, label = paste0(Freq)),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Gender count for the subjects")) + theme_void()
+```
+
+```{r}
+## computing SUBJECT Race proportions
+s_race_2 <- as.data.frame(table(SUBJECT_RACE)) %>% mutate(csum = rev(cumsum(rev(Freq))), pos = Freq/2 + lead(csum, 1),
+                                                          pos = if_else(is.na(pos), Freq/2, pos))
+
+sub_race <- ggplot(as.data.frame(table(SUBJECT_RACE)), aes(x = "" , y = Freq, fill = fct_inorder(SUBJECT_RACE))) +
+  geom_col(width = 1, color = 1) + coord_polar(theta = "y") + scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = s_race_2, aes(y = pos, label = paste0(Freq)),
+                   size = 4.5, nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "Racial count for the subjects")) + theme_void()
+```
+
+```{r}
+ggarrange(off_gender, off_race, sub_gender, sub_race, labels = c("Officers Gender Proportions", "Officers Races Proportions", 
+                                                                 "Subject Gender Proportions", "Subject Races Proportions"),ncol = 2, nrow = 2)
+```
+
+```{r}
+fig <- plot_ly()
+fig <- fig %>% add_pie(data = as.data.frame(table(OFFICER_GENDER)), labels = ~OFFICER_GENDER, values = ~Freq, textinfo='label+percent',
+                         name = "Gender", domain = list(row = 0, column = 0))
+fig <- fig %>% add_pie(data = as.data.frame(table(OFFICER_RACE)), labels = ~OFFICER_RACE, values = ~Freq, textinfo='label+percent',
+                         name = "Race", domain = list(row = 0, column = 1))
+fig <- fig %>% add_pie(data = as.data.frame(table(SUBJECT_GENDER)), labels = ~SUBJECT_GENDER, values = ~Freq, textinfo='label+percent',
+                         name = "Gender", domain = list(row = 1, column = 0))
+fig <- fig %>% add_pie(data = as.data.frame(table(SUBJECT_RACE)), labels = ~SUBJECT_RACE, values = ~Freq, textinfo='label+percent',
+                         name = "Race", domain = list(row = 1, column = 1))
+fig <- fig %>% layout(title = "Officers Top, Subjects Down (Gender and Racial) Proportions", showlegend = F, grid=list(rows=2, columns=2),
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+fig
+```
+
+Checking officer and subject gender and race from which clearly have
+concluded that male are covering maximum of the proportion from both
+sides which is around **80%** of the population. Other officers are **White, Hispanic and Black** 
+covering **61%, 20%, 14%** of the whole population
+accordingly whereas subject races are **Black, Hispanic, and White**
+covering the **55%, 21% and 19%** of the whole population accordingly.
+
+### Different Actions Against Subject
+
+```{r}
+#### Merging Accidental Discharge to others
+policing_data <- policing_data %>% replace(.=="Accidental Discharge", "Other")
+incidents_race <- policing_data[SUBJECT_RACE == 'Black' | SUBJECT_RACE == 'Hispanic' | SUBJECT_RACE == 'White',]
+
+actions <- ggplot(incidents_race, aes(x = INCIDENT_REASON, fill = SUBJECT_RACE)) + 
+  geom_bar() + coord_flip() + labs(title = "Actions take place against Subjects Racials", x = "Actions Types", y= "Total Count with Racial Facet")
+ggplotly(actions)
+```
+
+```{r}
+races_and_actions <- as.data.frame(table(incidents_race$INCIDENT_REASON, incidents_race$SUBJECT_RACE))
+names(races_and_actions)[names(races_and_actions) == "Var1"] <- "Reason"
+names(races_and_actions)[names(races_and_actions) == "Var2"] <- "Gender"
+p <- ggplot(races_and_actions, aes(weight=Freq))+theme_bw()
+cs <- p+aes(Reason)+geom_bar(fill="#af8dc3")+coord_flip()+facet_wrap(~Gender)+
+      labs(title = "Actions take place against Subjects Racials", x = "Actions Types", y= "Total Count with Racial Facet")
+
+ggplotly(cs, tooltip = c("count", "Reason"))
+```
+
+
+```{r}
+arrested_racials <- as.data.frame( round(100 *prop.table(table(incidents_race$SUBJECT_WAS_ARRESTED, incidents_race$SUBJECT_RACE)),1) )
+names(arrested_racials)[names(arrested_racials) == "Var1"] <- "Arrested"
+names(arrested_racials)[names(arrested_racials) == "Var2"] <- "Race"
+names(arrested_racials)[names(arrested_racials) == "Freq"] <- "Percentage"
+p <- ggplot(arrested_racials, aes(weight= Percentage))+theme_bw()
+cs <- p+aes(Arrested)+geom_bar(fill="#af8dc3")+coord_flip()+facet_wrap(~Race) +
+    labs(title = "Subjects Races got Arrested over the year", x = "Arrested/Not Arrested (Yes/No)", y= "Total Count with Racial Facet")
+
+ggplotly(cs, tooltip = c("Percentage", "Arrested"))
+```
+
+```{r}
+round(100 * prop.table(table(incidents_race$INCIDENT_REASON)),1)
+```
+These analyses shows that most of the actions which taken place were
+*arrest, service call, Call for cover, traffic stop, and crime in
+progress* were covering around **48%, 28.4%, 5.5%, 3.9% and 3.4%** of the
+total crimes where different races got affected by it. Black subjects
+got **arrested, service call, traffic stop and call for cover** a lot.
+Black, Hispanic and white arrested around **673, 244 and 215** of the
+total crimes. Then so on service call was distributed around **360, 161 and 140**
+between **Black, White and Hispanic**.
+
+### Officers Races Caught Subject Races
+
+```{r}
+selected_races <- policing_data[SUBJECT_RACE == 'Black' | SUBJECT_RACE == 'Hispanic' | SUBJECT_RACE == 'White',]
+races_caught <- as.data.frame(table(selected_races$OFFICER_RACE, selected_races$SUBJECT_RACE))
+names(races_caught)[names(races_caught) == "Var1"] <- "Officer_Race"
+names(races_caught)[names(races_caught) == "Var2"] <- "Subject_Race"
+names(races_caught)[names(races_caught) == "Freq"] <- "Count"
+p <- ggplot(races_caught, aes(weight=Count))+ylab("")+theme_bw()
+cs <- p+aes(Officer_Race)+geom_bar(fill="#af8dc3")+coord_flip()+facet_wrap(~Subject_Race)+ 
+  labs(title = "Checking which Races of Officers caught which type of subjects", x = "Officers Races", y= "Count of Subject Races Caught by Officers")
+
+ggplotly(cs, tooltip = c("Officer_Race", "Count"))
+```
+
+
+```{r}
+races_caught_others <- as.data.frame(round(100 * prop.table(table(selected_races$OFFICER_RACE, selected_races$SUBJECT_RACE)),1))
+names(races_caught_others)[names(races_caught_others) == "Var1"] <- "Officer_Race"
+names(races_caught_others)[names(races_caught_others) == "Freq"] <- "Percentage"
+races_caught_others %>%
+  group_by(Officer_Race) %>%
+  summarize(Total_Percentage = sum(Percentage))
+```
+
+
+After seeing these analysis I checked that how different races of Officers are impacting other races of Subjects. In 2016
+__61.7% Black, Hispanic and White people get caught by White people__. Out of this percentage, White caught around __673 Black__, __302 Hispanic__ and __277 White__ subjects. __Hispanics and Black__ caught people with the percentage of __20.3% and 14.1%__ where __Hispanic caught 230 Black__ and __Black officers caught 201 Black subjects__.
+
+
+### Crimes through out the year over Calendar
+
+```{r}
+incident_dates <- policing_data %>% arrange(desc(mdy(INCIDENT_DATE))) %>% select(INCIDENT_DATE)
+incidents_by_month <- as.data.frame(table(incident_dates$INCIDENT_DATE))
+for(i in 1:12) incidents_by_month <- incidents_by_month %>% add_row(Freq = 0) ### as we have only 353 days out of one year so filling remaining days with zero crimes
+
+calendR(year = 2017,
+        special.days = incidents_by_month$Freq,
+        gradient = TRUE,
+        low.col = "#FCFFDD",
+        special.col = "#00AAAE",
+        legend.pos = "right",
+        legend.title = "Number of Incidents",
+        title = "Policy Equiting 2016")
+```
+![optional caption text](Pictures/Calendar.png){height="800" width=100% }
+Plotting the calendar for the year to see that how many crimes has happened through out the year. Where it was clearly seen that on certain dates __Dec 14 2016, Jun 06 2016, May 01 2016, May 27 2016 and Aug 24 2016__ when the crime rates were touching __20 or 20+__. __December, and April__ was the months where it could seen that crimes are around __zero's on most of the days__.
+* This plot is more visible if you inspect it in new window.
+
+### Yearly Crimes Rate through line plot
+
+```{r}
+crimes_rate_yrly <- selected_races %>% group_by(INCIDENT_DATE) %>% summarize(count = n())
+crimes_rate_yrly$INCIDENT_DATE <- as.Date(crimes_rate_yrly$INCIDENT_DATE, format =  "%m/%d/%Y")
+names(crimes_rate_yrly)[names(crimes_rate_yrly) == "INCIDENT_DATE"] <- "Date_Happened"
+names(crimes_rate_yrly)[names(crimes_rate_yrly) == "count"] <- "Total_Crimes"
+
+smooth_line <- ggplot(crimes_rate_yrly, aes(x = Date_Happened, y = Total_Crimes)) +
+  geom_smooth(formula = y ~ x, method = "lm", color = "red") + labs(x="Months", y= "Incidents Count", title="Incidents Tracking Through the year 2016 in Dellas")
+  
+ggplotly(smooth_line, tooltip = c("Total_Crimes"))
+```
+
+```{r}
+line <- ggplot(crimes_rate_yrly, aes(x = Date_Happened, y = Total_Crimes)) +
+  geom_line() + labs(x="Months", y= "Incidents Count", title="Incidents Tracking Through the year 2016 in Dellas")
+ggplotly(line)
+```
+
+
+```{r fig.height=60, fig.width=50}
+## Animated Version
+animated_incidents <- ggplot(crimes_rate_yrly, aes(x = Date_Happened, y = Total_Crimes)) +
+    geom_line() +
+    geom_point() +
+    theme_ipsum() +
+    transition_reveal(Date_Happened)+
+    labs(x="Months", y= "Incidents Count", title="Incidents Tracking Through the year 2016 in Dellas")
+
+animate(animated_incidents, height = 461, width = 1050)
+```
+
+Drawn two differnet graphs to check how over the year incidents are decreasing. Where it was seen that the maximum crimes in a day happened in __October 2016__ where it even crosses __20 crimes and total of 24__ crimes happened. On different occasions different number of crimes happened but overall crimes ration was below average and it was seen that overall till the end of __2016 crimes__ were __decreasing__ with the significant numbers.
+
+
+### Incidents Happened in Different Divisions
+```{r}
+division_incidents <- as.data.frame(table(DIVISION, INCIDENT_DATE))
+division_incidents$INCIDENT_DATE <- as.Date(division_incidents$INCIDENT_DATE, format =  "%m/%d/%Y")
+names(division_incidents)[names(division_incidents) == "INCIDENT_DATE"] <- "Date_Happened"
+names(division_incidents)[names(division_incidents) == "Freq"] <- "Total_Crimes"
+
+division_incidents <- ggplot(division_incidents, aes(x = Date_Happened, y = Total_Crimes, group = 'Total_Crimes'))  + 
+  geom_smooth(formula = y ~ x, method = "lm", color = "red") +
+  facet_wrap(~DIVISION,ncol=2) +
+  theme(legend.position="none") + 
+  labs(x="", y= "", title="Incidents frequency in different divisions through lm")
+
+ggplotly(division_incidents, tooltip = c("Total_Crimes"))
+```
+
+### Incidents MAP of Divisions (Long, Lat)
+
+```{r}
+division_incidents_count <- data.frame(table(LOCATION_LONGITUDE, LOCATION_LATITUDE, DIVISION)) %>% filter(Freq != 0)
+names(division_incidents_count)[names(division_incidents_count) == "Freq"] <- "Total_Crimes"
+division_incidents_count <- division_incidents_count[-1,]
+incidents_map_division <- ggplot(division_incidents_count, aes(x = LOCATION_LONGITUDE, y = LOCATION_LATITUDE, size = Total_Crimes, color = DIVISION, shape = DIVISION)) + geom_point(size = 2) + scale_shape_manual(values = 0:7) + theme(axis.title.y=element_blank(),axis.text.y=element_blank(), axis.ticks.y=element_blank(),axis.title.x=element_blank(),axis.text.x=element_blank(), axis.ticks.x=element_blank()) + 
+  labs(x="", y= "", title="Incidents in different divisions")
+
+ggplotly(incidents_map_division, tooltip = c("DIVISION", "Total_Crimes"))
+```
+
+```{r}
+ggplot(as.data.frame(table(DIVISION, INCIDENT_DATE)) %>%group_by(DIVISION) %>% 
+        summarise(Frequency = sum(Freq)), aes(area = Frequency, fill = DIVISION, label = paste(DIVISION, Frequency, sep = "\n"))) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white",
+                    place = "centre",
+                    size = 15)
+```
+
+```{r}
+leaflet() %>% addTiles() %>% addCircleMarkers(data=division_incidents_count, 
+          lat = as.numeric(LOCATION_LATITUDE), lng = as.numeric(LOCATION_LONGITUDE), radius = ~Total_Crimes, 
+          fillColor = 'darkBlue', fillOpacity = 0.6, label = ~Total_Crimes)
+```
+Crimes happened in the whole dellas was shown out through the map to see which area got affected most. It was seen that __Central area__ of Dellas was on top with the most crime of __563__ and then __SouthEast__ area was second highest with most crimes of __362__. And it was clearly seen that overall crimes are __decreasing__ in all the divisions but __2 divions__ are still constant where __Central and NorthEast__ was on top.
+*This graph is viewable from the viewer section if we run it through console.
+
+#### Officers Got Injured and Bruises
+
+```{r}
+hsize <- 3
+
+o_injuries <- ggplot(as.data.frame(table(OFFICER_INJURY)), aes(x = hsize, y = Freq, fill = OFFICER_INJURY)) +
+  geom_col() +
+  geom_label(aes(label = Freq),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) + guides(fill = guide_legend(title = "Officers Got Injured")) + labs(title = "Injured/Not Injured (Yes/No)", x = "", y = "")
+
+s_injuries <- ggplot(as.data.frame(table(SUBJECT_INJURY)), aes(x = hsize, y = Freq, fill = SUBJECT_INJURY)) +
+  geom_col() +
+  geom_label(aes(label = Freq),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) + guides(fill = guide_legend(title = "Officers Got Injured")) + labs(title = "Count?", x = "", y = "")
+
+ggarrange(o_injuries, s_injuries, labels = c("Officers Injured", "Subjects Injured"),ncol = 2, nrow = 1)
+
+```
+```{r}
+mostly_injuries_count <- as.data.frame(table(policing_data %>% filter(OFFICER_INJURY == "Yes") %>% select(OFFICER_INJURY_TYPE))) %>% filter(Freq > 5)
+names(mostly_injuries_count)[names(mostly_injuries_count) == "Var1"] <- "Injury"
+names(mostly_injuries_count)[names(mostly_injuries_count) == "Freq"] <- "Total_Officers"
+
+officers_bruises <- ggplot(mostly_injuries_count, aes(x = Injury, y = Total_Officers)) +
+  geom_segment(aes(x = Injury, xend = Injury, y = 0, yend = Total_Officers)) +
+  geom_point(size = 4, pch = 21, bg = 4, col = 1) +
+  coord_flip() + labs(title = "Officers mostly injuries?", x = "Injuries Types", y = "Officers Count")
+
+ggplotly(officers_bruises)
+```
+
+```{r}
+s_mostly_injuries_count <- as.data.frame(table(policing_data %>% filter(SUBJECT_INJURY == "Yes") %>% select(SUBJECT_INJURY_TYPE))) %>% filter(Freq > 5)
+names(s_mostly_injuries_count)[names(s_mostly_injuries_count) == "Var1"] <- "Injury"
+names(s_mostly_injuries_count)[names(s_mostly_injuries_count) == "Freq"] <- "Subjects"
+
+subjects_bruises <- ggplot(s_mostly_injuries_count, aes(x = Injury, y = Subjects)) +
+  geom_segment(aes(x = Injury, xend = Injury, y = 0, yend = Subjects)) +
+  geom_point(size = 4, pch = 21, bg = 4, col = 1) +
+  coord_flip() + labs(title = "Subjects mostly injuries?", x = "Injuries Types", y = "Subjects Count")
+
+ggplotly(subjects_bruises)
+```
+
+
+It was clearly seen that not most of the officers got injured during different crimes but __234 got injured__ about where they got mostly two types of scrapes from __Abrasion/Scrape to No Visible Injury__. In case of Subjects those got injured more __629 totally__ and and they also got __Abrasion/Scrape, Laceration/Cut and Puncture__ around __189, 52, 24__ respectively out of the totall subjects caught.
+
+
+### Officers on force from their joining
+
+```{r}
+## so on average I am checking which racial officers are there in their force and working from long time.
+hsize <- 4
+force_duration <- policing_data %>% group_by(OFFICER_RACE) %>% summarise(Average = mean(as.numeric(OFFICER_YEARS_ON_FORCE)))
+average_time_onforce <- ggplot(force_duration, aes(x = hsize, y = Average, fill = OFFICER_RACE)) +
+  geom_col(color = "black") +
+  geom_label(aes(label = round(Average,2)),
+             position = position_stack(vjust = 0.5),
+             show.legend = FALSE) +
+  coord_polar(theta = "y") +
+  xlim(c(0.2, hsize + 0.5)) + labs(title = "Officers Tenures Period Races Wise on average?", x = "", y = "")
+
+average_time_onforce
+```
+
+```{r}
+fig <- force_duration %>% plot_ly(labels = ~OFFICER_RACE, values = ~Average)
+
+fig <- fig %>% add_pie(hole = 0.8)
+
+fig <- fig %>% layout(title = "Officers Tenures Period Races Wise on average?",
+
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+fig
+```
+
+### Subjects Offenses they have made
+```{r}
+offense_if_arrested <- as.data.frame(table(policing_data %>% filter(SUBJECT_WAS_ARRESTED == "Yes") %>% select(SUBJECT_OFFENSE))) %>% filter(Freq > 10)
+names(offense_if_arrested)[names(offense_if_arrested) == "Var1"] <- "Offense"
+names(offense_if_arrested)[names(offense_if_arrested) == "Freq"] <- "Subjects"
+
+offense_if_arrested <- ggplot(offense_if_arrested, aes(x = Offense, y = Subjects)) +
+  geom_segment(aes(x = Offense, xend = Offense, y = 0, yend = Subjects)) +
+  geom_point(size = 4, pch = 21, bg = 4, col = 1) +
+  coord_flip() + labs(title = "Subjects mostly Offenses?", x = "Offenses Types", y = "Subjects Count")
+
+ggplotly(offense_if_arrested)
+```
+
+Checking the top 10 most happening offenses by the subjects where __APOWW, Publix Intoxication, Warrant/Hold or Assault/FV__ was the most happening offenses with __399, 179, 110, and 92__ numbers recorded accordingly. In the data it is shown that there is total of 6 types of forces used where mostly just upto force type 3 were used but then it was stopped. 
+
+
+## Conclusion:
+It is concluded through the data that mostly crimes were happened by the subjects Black and Hispanic. Mostly White officers were in actions and caught those Black subjects. Officers of type Black and White were on top in their force years tenure. Overall crimes were decreasing throughout the year till the end of 2016 and most of the crimes has happened in the Central area of the Dellas. Subjects were got injured more than officers where they committed APOWW and Intoxication offense alot while Officers got Abrasion/Scrape alot.
+
+## References:
+* https://plotly.com/r/
+* https://r-charts.com/ggplot2/
+
