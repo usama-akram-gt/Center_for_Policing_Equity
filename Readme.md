@@ -15,7 +15,7 @@ concluded racially and it has been checked that how different crimes
 have happened throughout the year through which police department can
 learn and grow accordingly. All of the key findings from the project are
 defined below: <br>
-Center for policing equity: <a href="https://www.kaggle.com/osamaakrambaig/center-for-policing-equity">Project Link</a>
+Center for policing equity: <a href="https://www.kaggle.com/code/osamaakrambaig/center-for-policing-equity">Project Link</a>
 
 ### Built With
 * [R](https://www.r-project.org/)
