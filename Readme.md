@@ -4,6 +4,8 @@
    <img src="https://github.com/usama-akram-gt/Center_for_Policing_Equity/blob/master/map.png" />
 </p>
 
+<iframe src="https://www.kaggle.com/embed/osamaakrambaig/center-for-policing-equity?kernelSessionId=97416969" height="800" style="margin: 0 auto; width: 100%; max-width: 950px;" frameborder="0" scrolling="auto" title="Center_for_Policing_Equity"></iframe>
+
 ### Problem Statement?
 How do you measure justice? And how do you solve the problem of racism in policing? We look for factors that drive racial disparities in policing by analyzing census and police department deployment data. The ultimate goal is to inform police agencies where they can make improvements by identifying deployment areas where racial disparities exist and are not explainable by crime rates and poverty levels.
 
